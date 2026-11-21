@@ -17,6 +17,8 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(parse('  Hello  '), ('send', '  Hello  '))
         self.assertEqual(parse('SERVER: My Server'), ('server', 'My Server'))
         self.assertEqual(parse('dm: 123'), ('dm_id', '123'))
+        self.assertEqual(parse('/return'), ('back', ''))
+        self.assertEqual(parse('/send /return'), ('send', '/return'))
 
     def test_duplicate_names_require_id(self):
         items = [SimpleNamespace(id=1, name='General'), SimpleNamespace(id=2, name='General')]

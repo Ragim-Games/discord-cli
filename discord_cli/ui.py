@@ -47,4 +47,4 @@ async def choose(title, items, label):
 
 def session():
     # No disk history (messages and tokens must not leak into shell history).
-    return PromptSession(history=None, enable_history_search=False)
+    return PromptSession(history=None, enable_history_search=False, erase_when_done=True)

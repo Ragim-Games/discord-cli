@@ -71,3 +71,23 @@ class AppTests(unittest.IsolatedAsyncioTestCase):
         with create_app_session(output=DummyOutput()), patch.object(Client, 'start', side_effect=discord.LoginFailure('invalid')):
             with self.assertRaises(discord.LoginFailure):
                 await run('test-placeholder')
+
+    async def test_return_to_channels_then_servers(self):
+        server = SimpleNamespace(id=1, subscribe=AsyncMock(), channels=[])
+        self.client.server = server
+        self.client.channel = SimpleNamespace(id=2)
+        self.client.pick = AsyncMock(return_value=None)
+        await self.client.command('/return')
+        self.assertIsNone(self.client.channel)
+        self.assertIs(self.client.server, server)
+        self.assertEqual(self.client.pick.await_args.args[0], 'Channels')
+        await self.client.command('/return')
+        self.assertIsNone(self.client.server)
+        self.assertEqual(self.client.pick.await_args.args[0], 'Servers')
+
+    async def test_return_from_dm_opens_dm_list(self):
+        self.client.channel = MagicMock(spec=discord.DMChannel)
+        self.client.pick = AsyncMock(return_value=None)
+        await self.client.command('/return')
+        self.assertIsNone(self.client.channel)
+        self.assertEqual(self.client.pick.await_args.args[0], 'Direct messages')

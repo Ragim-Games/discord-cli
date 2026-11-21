@@ -21,6 +21,8 @@ def parse(line):
     if match:
         return match[1].lower(), match[2]
     command = line.strip().lower()
+    if command == '/return':
+        return 'back', ''
     if command in {'servers', 'channels', 'dm', 'help', 'back', 'leave', 'mute', 'unmute', 'quit', 'devices'}:
         return command, ''
     if command.startswith('/send '):

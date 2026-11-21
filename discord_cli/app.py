@@ -12,7 +12,7 @@ HELP = '''Commands:
   Channel: ID or name     Open a channel directly
   dm                      Choose an existing direct/group conversation
   dm: USER_ID             Open a direct conversation by user ID
-  back                    Go up one level (also disconnects voice)
+  /return (or back)       Go back to the previous list (disconnects voice)
   leave                   Disconnect voice
   mute / unmute           Mute/unmute the microphone
   devices                 List local audio device IDs
@@ -170,11 +170,18 @@ class Client(discord.Client):
             self.say('Microphone muted.' if action == 'mute' else 'Microphone ON.')
         elif action == 'back':
             had_channel = self.channel is not None
+            was_dm = isinstance(self.channel, (discord.DMChannel, discord.GroupChannel))
             await self.leave()
             self.channel = None
-            if not had_channel and self.server:
-                await self.server.subscribe(typing=False, activities=False, threads=False, member_updates=False)
-                self.server = None
+            if was_dm:
+                await self.command('dm')
+            elif had_channel and self.server:
+                await self.command('channels')
+            else:
+                if self.server:
+                    await self.server.subscribe(typing=False, activities=False, threads=False, member_updates=False)
+                    self.server = None
+                await self.command('servers')
         elif action == 'devices':
             import sounddevice
             self.say(sounddevice.query_devices())

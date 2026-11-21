@@ -60,7 +60,9 @@ user_523: Hello world
 ```
 
 Only the currently selected conversation prints live messages. Incoming output
-preserves the message you are typing. Opening a text channel or DM displays its
+preserves the message you are typing. Submitted input lines disappear, leaving
+only the received chat messages instead of a duplicate prompt-and-message echo.
+Opening a text channel or DM displays its
 latest 20 messages. Messages arriving during a menu are counted rather than
 overwriting the list; reopen the conversation to view recent history.
 
@@ -72,7 +74,7 @@ overwriting the list; reopen the conversation to view recent history.
 | `Channel: ID` or `Channel: Name` | Enter a text or voice channel |
 | `dm` | Pick an existing DM or group DM |
 | `dm: USER_ID` | Open a one-to-one DM; sending is a separate action |
-| `back` | Move up a level and disconnect voice |
+| `/return` (or `back`) | Disconnect voice and return to the channel, DM, or server list |
 | `leave` | Disconnect voice |
 | `mute`, `unmute` | Control microphone |
 | `devices` | List audio devices |
