@@ -12,6 +12,7 @@ def main():
     parser.add_argument('--output-device', type=int, help='Speaker device ID')
     parser.add_argument('--devices', action='store_true', help='List audio devices without logging in')
     args = parser.parse_args()
+    token = None
     try:
         if args.devices:
             import sounddevice
@@ -44,6 +45,11 @@ def main():
         parser.exit(1, 'Cannot access config.json. Check file permissions and free disk space.\n')
     except (EOFError, KeyboardInterrupt):
         print('\nGoodbye.')
+    except Exception as exc:
+        message = str(exc)
+        if token:
+            message = message.replace(token, '[REDACTED]')
+        parser.exit(1, f'Unexpected error ({type(exc).__name__}): {message}\n')
 
 
 if __name__ == '__main__':

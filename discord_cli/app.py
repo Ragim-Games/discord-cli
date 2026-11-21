@@ -46,6 +46,10 @@ class Client(discord.Client):
         self.was_ready = False
 
     def say(self, text):
+        text = str(text)
+        token = getattr(self.http, 'token', None)
+        if isinstance(token, str) and token:
+            text = text.replace(token, '[REDACTED]')
         print(safe_text(text))
 
     async def on_ready(self):
@@ -112,7 +116,10 @@ class Client(discord.Client):
             self.say('Connecting voice...')
             await self.call.connect(channel)
             self.channel = channel
-            self.say(f'Voice: {channel.name}. Microphone ON. Use mute or leave.')
+            if self.call.notice:
+                self.say(self.call.notice)
+            mode = 'Microphone ON' if self.call.microphone else 'Listen-only'
+            self.say(f'Voice: {channel.name}. {mode}. Use mute or leave.')
             return
         await self.leave()
         self.channel = channel
@@ -223,16 +230,18 @@ class Client(discord.Client):
                         continue
                     if not await self.command(line):
                         break
-                except (ValueError, discord.DiscordException, OSError, RuntimeError, ImportError) as exc:
+                except (EOFError, KeyboardInterrupt):
+                    raise
+                except Exception as exc:
                     # HTTP exception bodies can contain user input; avoid dumping payloads.
                     if isinstance(exc, discord.Forbidden):
                         self.say('Permission denied by Discord.')
                     elif isinstance(exc, discord.HTTPException):
                         self.say(f'Discord request failed (HTTP {exc.status}, code {exc.code}).')
-                    elif isinstance(exc, ValueError):
+                    elif isinstance(exc, (ValueError, RuntimeError)):
                         self.say(str(exc))
                     else:
-                        self.say(f'Operation failed ({type(exc).__name__}). Check connection and audio devices.')
+                        self.say(f'Operation failed ({type(exc).__name__}): {exc}')
         except (EOFError, KeyboardInterrupt):
             pass
         finally:

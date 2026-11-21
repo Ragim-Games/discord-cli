@@ -58,7 +58,7 @@ class AppTests(unittest.IsolatedAsyncioTestCase):
     async def test_voice_joins_and_cleans_up(self):
         channel = MagicMock(spec=discord.VoiceChannel)
         channel.name = 'Voice'
-        call = SimpleNamespace(connect=AsyncMock(), close=AsyncMock())
+        call = SimpleNamespace(connect=AsyncMock(), close=AsyncMock(), notice=None, microphone=object())
         with patch('discord_cli.audio.Call', return_value=call):
             await self.client.open_channel(channel)
         call.connect.assert_awaited_once_with(channel)
@@ -91,3 +91,12 @@ class AppTests(unittest.IsolatedAsyncioTestCase):
         await self.client.command('/return')
         self.assertIsNone(self.client.channel)
         self.assertEqual(self.client.pick.await_args.args[0], 'Direct messages')
+
+    async def test_audio_error_does_not_exit_terminal(self):
+        import sounddevice
+        prompt = SimpleNamespace(prompt_async=AsyncMock(side_effect=['Channel: 1', 'quit']))
+        self.client.command = AsyncMock(side_effect=[True, sounddevice.PortAudioError('No input device'), False])
+        with patch('discord_cli.app.session', return_value=prompt), patch.object(self.client, 'is_ready', return_value=True):
+            await self.client.terminal()
+        self.assertEqual(prompt.prompt_async.await_count, 2)
+        self.assertTrue(any('PortAudioError' in str(call) for call in self.client.say.call_args_list))

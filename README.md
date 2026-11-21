@@ -90,6 +90,9 @@ are no scheduled, bulk, or automatic messages. Input history is not saved to dis
 ## Voice
 
 Selecting a voice channel connects microphone and speakers automatically.
+If the default microphone cannot be opened, the client joins muted in listen-only
+mode and explains the device error. An explicitly selected invalid input device
+reports an error instead; use `devices` to find a valid ID and rejoin.
 **Your microphone is live after connection.** Use `mute` to stop transmitting
 audio and `leave` to release the devices. Headphones prevent acoustic feedback;
 echo cancellation, noise suppression, video, stage channels, and DM calls are
@@ -108,6 +111,12 @@ capture converted to stereo, and bounded per-speaker playback queues. Default
 devices must accept 48 kHz PCM. If opening devices or connecting fails, the client
 releases audio resources and returns to the prompt. Changing to another channel
 disconnects the existing call. No audio is recorded to disk.
+
+Voice errors include the failing step (speakers, microphone, connection, receive,
+or transmit) and remain visible in the CLI. If Python itself exits with an error,
+`start.cmd` pauses so the terminal does not immediately close. Copy the error
+text when reporting a problem. The launcher also enables Python's native crash
+stack output for diagnosing audio driver or extension crashes.
 
 ## Resource use and verification
 
